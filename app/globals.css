@@ -53,6 +53,77 @@ a {
   outline-offset: 3px;
 }
 
+.scannerScreen {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #101010;
+}
+
+.scannerVideo {
+  position: absolute;
+  inset: calc(env(safe-area-inset-top) * -1) 0 calc(env(safe-area-inset-bottom) * -1);
+  width: 100vw;
+  height: calc(100dvh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  object-fit: cover;
+  background: #101010;
+}
+
+.scannerScreen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent 28%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.34), transparent 38%);
+  pointer-events: none;
+}
+
+.scannerMessage {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: max(32px, calc(env(safe-area-inset-top) + 24px));
+  z-index: 1;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: center;
+  backdrop-filter: saturate(180%) blur(18px);
+}
+
+.scanButton {
+  position: absolute;
+  left: 50%;
+  bottom: max(48px, calc(env(safe-area-inset-bottom) + 36px));
+  z-index: 1;
+  min-width: 148px;
+  min-height: 56px;
+  border: 0;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(89, 82, 175, 0.94), rgba(161, 154, 253, 0.82)),
+    #5952af;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+  transform: translateX(-50%);
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 18px 42px rgba(53, 44, 138, 0.32);
+  backdrop-filter: saturate(180%) blur(22px);
+}
+
 .chatbotScreen {
   position: relative;
   height: 100dvh;

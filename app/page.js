@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const actions = [
-  { label: "outfit scanner" },
+  { label: "outfit scanner", href: "/outfit-scanner" },
   { label: "chatbot", href: "/chatbot" },
   { label: "qr code scanner" }
 ];
