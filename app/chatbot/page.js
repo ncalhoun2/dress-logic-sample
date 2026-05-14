@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const suggestions = [
   {
@@ -108,13 +108,197 @@ function createMessageId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function AgentStepIcon({ type }) {
+  if (type === "texture") {
+    return (
+      <svg className="agentIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 6.5h14" />
+        <path d="M5 11.5h14" />
+        <path d="M5 16.5h14" />
+        <path d="M8 4v15" />
+        <path d="M16 4v15" />
+      </svg>
+    );
+  }
+
+  if (type === "shopping") {
+    return (
+      <svg className="agentIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.5 8.5h11l1 11h-13l1-11Z" />
+        <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
+      </svg>
+    );
+  }
+
+  if (type === "verify") {
+    return (
+      <svg className="agentIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10.8 17.2a6.4 6.4 0 1 1 4.5-1.9" />
+        <path d="M14.8 14.8 20 20" />
+        <path d="m7.8 11.8 2.1 2.1 4.5-5" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="agentIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8.5 5.5 4 9v9.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V9l-4.5-3.5" />
+      <path d="M8.5 5.5c1.2 1 2.4 1.5 3.5 1.5s2.3-.5 3.5-1.5" />
+      <path d="M9 13h6" />
+    </svg>
+  );
+}
+
+function AgentProgressResponse({ step }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const stepDuration = 2;
+  const productMatches = [
+    {
+      name: "Jacket match",
+      image: "/assets/tyler-jacket.png",
+      alt: "Matching jacket",
+      url: "https://www.etsy.com/listing/1873419847/handmade-brad-pitt-fight-club-tyler"
+    },
+    {
+      name: "Shirt match",
+      image: "/assets/tyler-shirt.png",
+      alt: "Matching shirt",
+      url: "https://www.etsy.com/listing/1464140070/tyler-durden-motocross-shirt"
+    },
+    {
+      name: "Pants match",
+      image: "/assets/tyler-pants.jpg",
+      alt: "Matching pants",
+      url: "https://www.amazon.ae/Ben-Davis-Original-Cotton-Twill/dp/B00MAD9TFM?th=1&psc=1"
+    }
+  ];
+  const progressSteps = [
+    {
+      activeLabel: "Analyzing clothing",
+      completeLabel: "Analyzed clothing",
+      icon: "clothing"
+    },
+    {
+      activeLabel: "Analyzing textures",
+      completeLabel: "Analyzed textures",
+      icon: "texture"
+    },
+    {
+      activeLabel: "Shopping for matches",
+      completeLabel: "Shopped for matches",
+      icon: "shopping"
+    },
+    {
+      activeLabel: "Verifying identical clothing",
+      completeLabel: "Verified identical clothing",
+      icon: "verify"
+    }
+  ];
+
+  if (step >= progressSteps.length) {
+    const completedDetails = progressSteps.filter((_, index) => [1, 3].includes(index));
+
+    return (
+      <article className="agentResponse messageFadeIn" aria-live="polite">
+        <button
+          className="agentProgressFinal"
+          type="button"
+          aria-expanded={isExpanded}
+          onClick={() => setIsExpanded((currentValue) => !currentValue)}
+        >
+          <span>Went shopping for you</span>
+          <small>{progressSteps.length * stepDuration}s</small>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m7 10 5 5 5-5" />
+          </svg>
+        </button>
+        {isExpanded ? (
+          <div className="agentProgressDetails">
+            {completedDetails.map((progressStep) => (
+              <div className="agentProgressItem isComplete" key={progressStep.activeLabel}>
+                <AgentStepIcon type={progressStep.icon} />
+                <span>{progressStep.completeLabel}</span>
+                <small>{stepDuration}s</small>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className="productMatchList" aria-label="Matched clothing items">
+          {productMatches.map((productMatch) => (
+            <article className="productMatchCard" key={productMatch.name}>
+              <img src={productMatch.image} alt={productMatch.alt} />
+              <div>
+                <h2>{productMatch.name}</h2>
+                <a href={productMatch.url} target="_blank" rel="noreferrer">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6.5 8.5h11l1 11h-13l1-11Z" />
+                    <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
+                  </svg>
+                  <span>Go to product</span>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+        <article className="message messageBot agentResultMessage">
+          <p>I found the same outfit for you. Let me know if you want more options.</p>
+        </article>
+      </article>
+    );
+  }
+
+  const visibleSteps = progressSteps
+    .slice(0, Math.min(step + 1, progressSteps.length))
+    .filter((_, index) => index === step || (index < step && [1, 3].includes(index)));
+
+  return (
+    <article className="agentResponse messageFadeIn" aria-live="polite">
+      {visibleSteps.map((progressStep) => {
+        const index = progressSteps.indexOf(progressStep);
+        const isComplete = index < step;
+        const label = isComplete ? progressStep.completeLabel : progressStep.activeLabel;
+
+        return (
+          <div
+            className={`agentProgressItem${isComplete ? " isComplete" : " isActive"}`}
+            key={progressStep.activeLabel}
+          >
+            <AgentStepIcon type={progressStep.icon} />
+            <span key={label}>{label}</span>
+            {isComplete ? <small>{stepDuration}s</small> : null}
+          </div>
+        );
+      })}
+    </article>
+  );
+}
+
 export default function Chatbot() {
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
   const [isStartingChat, setIsStartingChat] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [agentRunId, setAgentRunId] = useState(null);
+  const [agentStep, setAgentStep] = useState(0);
   const photoInputRef = useRef(null);
   const isEmptyChat = messages.length === 0;
+
+  useEffect(() => {
+    if (!agentRunId) {
+      return undefined;
+    }
+
+    setAgentStep(0);
+    const timeouts = [1, 2, 3, 4].map((nextStep) =>
+      window.setTimeout(() => {
+        setAgentStep(nextStep);
+      }, nextStep * 2000)
+    );
+
+    return () => {
+      timeouts.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, [agentRunId]);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -138,12 +322,16 @@ export default function Chatbot() {
       setIsStartingChat(true);
       window.setTimeout(() => {
         setMessages([nextMessage]);
+        setAgentStep(0);
+        setAgentRunId(createMessageId());
         setIsStartingChat(false);
       }, 280);
       return;
     }
 
     setMessages((currentMessages) => [...currentMessages, nextMessage]);
+    setAgentStep(0);
+    setAgentRunId(createMessageId());
   }
 
   function handlePhotoChange(event) {
@@ -226,21 +414,24 @@ export default function Chatbot() {
               </section>
             </div>
           ) : (
-            messages.map((message, index) => (
-              <article
-                className={`message messageUser${index === 0 ? " messageFadeIn" : ""}`}
-                key={message.id}
-              >
-                {message.photo ? (
-                  <img
-                    className="messagePhoto"
-                    src={message.photo.url}
-                    alt={message.photo.name}
-                  />
-                ) : null}
-                {message.text ? <p>{message.text}</p> : null}
-              </article>
-            ))
+            <>
+              {messages.map((message, index) => (
+                <article
+                  className={`message messageUser${index === 0 ? " messageFadeIn" : ""}`}
+                  key={message.id}
+                >
+                  {message.photo ? (
+                    <img
+                      className="messagePhoto"
+                      src={message.photo.url}
+                      alt={message.photo.name}
+                    />
+                  ) : null}
+                  {message.text ? <p>{message.text}</p> : null}
+                </article>
+              ))}
+              {agentRunId ? <AgentProgressResponse key={agentRunId} step={agentStep} /> : null}
+            </>
           )}
         </section>
 
